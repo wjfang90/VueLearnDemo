@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./lib/animate.css">
+    <script src=".//lib/vue-2.4.0.js"></script>
+    <style>
+        .ball {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='app'>
+
+        <div>
+
+            <!--
+                自定义过渡类名
+                enter-class
+                enter-active-class
+                enter-to-class (2.1.8+)
+                leave-class
+                leave-active-class
+                leave-to-class (2.1.8+)
+            -->
+            <button @click="flag=!flag">toggle css</button>
+            <transition enter-active-class="animated bounceIn" leave-active-class="animated bounceOut">
+                <p v-show="flag">
+                    <span>animated css</span>
+                </p>
+            </transition>
+
+            <!-- 使用 :duration="毫秒值" 来统一设置 入场 和 离场 时候的动画时长 -->
+            <!-- todo: duration 设置时长不启作用 -->
+            <transition enter-active-class="bounceIn" leave-active-class="bounceOut" :duration="3000">
+                <p v-show="flag" class="animated">
+                    <span>animated css duration</span>
+                </p>
+            </transition>
+            <transition enter-active-class="bounceIn" leave-active-class="bounceOut"
+                :duration="{enter: 1000, leave: 3000 }">
+                <p v-show="flag" class="animated">
+                    <span>animated css duration object</span>
+                </p>
+            </transition>
+
+            <div>
+                <!-- 列表过渡 不能使用 transition 包裹，需要使用 transitionGroup -->
+                <!-- 如果要为 v-for 循环创建的元素设置动画，必须为每一个 元素 设置 :key 属性 -->
+                <!-- 通过 为 transition-group 元素，设置 tag 属性，指定 transition-group 渲染为指定的元素，如果不指定 tag 属性，默认，渲染为 span 标签 -->
+                <!-- li 外不需要添加ul标签了，设置 transition tag属性为ul 即可 -->
+                <transition-group tag="ul" enter-active-class="animated bounceIn"
+                    leave-active-class="animated bounceOut">
+                    <li v-for="(item, index) in 5" :key="index" v-show="flag">transition-group {{item}}</li>
+                </transition-group>
+            </div>
+        </div>
+
+        <div>
+            <!--
+                transition 事件(钩子函数实现)
+                before-enter
+                before-leave
+                before-appear
+                enter
+                leave
+                appear
+                after-enter
+                after-leave
+                after-appear
+                enter-cancelled
+                leave-cancelled (v-show only)
+                appear-cancelled
+            -->
+            <button @click="ballFlag=!ballFlag">加入购物车</button>
+
+            <transition @before-enter="beforeEnter" @enter="enter" @after-enter="afterEnter">
+                <div v-show="ballFlag">
+                    <div class="ball"></div>
+                </div>
+            </transition>
+        </div>
+    </div>
+    <script>
+        var mv = new Vue({
+            el: '#app',
+            data: {
+                flag: false,
+                ballFlag: false
+            }, methods: {
+                // 注意： 动画钩子函数的第一个参数：el，表示 要执行动画的那个DOM元素，是个原生的 JS DOM对象
+                beforeEnter(el) {
+                    console.log("beforeEnter");
+
+                    el.style.transform = "translate(0, 0)";
+                },
+                enter(el, done) {
+                    console.log("enter");
+
+                    // 这句话，没有实际的作用，但是，如果不写，出不来动画效果；
+                    // 可以认为 el.offsetWidth 或offsetTop offsetLeft offsetRight会强制动画刷新
+                    el.offsetWidth
+
+                    el.style.transform = "translate(150px, 450px)";
+                    el.style.transition = 'all 1s ease';
+
+                    //当只用 JavaScript 过渡的时候，在 enter 和 leave 中必须使用 done 进行回调。否则，它们将被同步调用，过渡会立即完成。
+                    done();// 这里的 done， 起始就是 afterEnter 这个函数，也就是说：done 是 afterEnter 函数的引用
+                },
+                afterEnter(el) {
+                    console.log("afterEnter");
+                    // Vue 把一个完整的动画，使用钩子函数，拆分为了两部分：前半场ballFlag = false -> true和后半场ballFlag = true -> false                    
+
+                    // 第一个功能，是控制小球的显示与隐藏
+                    // 第二个功能： 直接跳过后半场动画，让 ballFlag 标识符 直接变为 false
+                    // 当第二次再点击 按钮的时候， ballFlag  false  ->    true
+                    this.ballFlag = !this.ballFlag;
+
+                    //el.style.opacity = 0 后就一直不显示了，相当于只操作前半场动画，还有后半场动画会执行
+                    // 第一次点击时，前半场ballFlag = false -> true，当第二次点击时，ballFlag = true -> false，应该执行下一个周期的前半场动画，却执行了前一个周的后半场动画，但现在不需要后半场，所以会有问题
+                    // el.style.opacity = 0.5;
+                }
+            },
+        })
+    </script>
+</body>
+
+</html>

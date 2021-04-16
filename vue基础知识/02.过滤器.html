@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./lib/vue-2.4.0.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <!--过滤器可以用在两个地方:双花括号插值和 v-bind 表达式 (后者从 2.1.0+ 开始支持)。过滤器应该被添加在 JavaScript 表达式的尾部，由“管道”符号指示：-->
+        <h4>全局过滤器 - 插值表达式</h4>
+        <p>{{currentDateTime | dateFormat('/')}}</p>
+
+        <h4>全局过滤器 - bind属性</h4>
+        <!--过滤器中的 function ，第一个参数，已经被规定死了，永远都是 过滤器 管道符前面 传递过来的数据-->
+        <input type="input" :value="currentDateTime|dateFormat('/')">
+
+        <h4>私有过滤器 - 插值表达式</h4>
+        <p>{{currentDateTime | dateTimeFormat}}</p>
+
+        <h4>同时使用多个过滤器</h4>
+        <!--当全局过滤器和局部过滤器重名时，会采用局部过滤器-->
+        <p>{{currentDateTime | dateTimeFormat | dateFormat('/')}}</p>
+
+    </div>
+</body>
+
+</html>
+<script>
+
+    // 全局的过滤器， 进行时间的格式化
+    // 所谓的全局过滤器，就是所有的VM实例都共享的
+    Vue.filter('dateFormat', function (dateStr, delimiter) {
+        var date = new Date(dateStr);
+        var year = date.getFullYear();
+        var month = (date.getMonth() + 1).toString().padStart(2, "0");
+        var day = date.getDate().toString().padStart(2, "0");
+
+        return `${year}${delimiter}${month}${delimiter}${day}`;
+    })
+
+    var vm = new Vue({
+        el: "#app",
+        data: {
+            currentDateTime: new Date().toString()
+        },
+        filters: {
+            //私有过滤器
+            dateTimeFormat(dateStr) {
+                if (!dateStr)
+                    return dateTime;
+
+                var date = new Date(dateStr);
+
+                var year = date.getFullYear();
+                var month = (date.getMonth() + 1).toString().padStart(2, "0");
+                var day = date.getDate().toString().padStart(2, "0");
+
+                var hour = date.getHours().toString().padStart(2, "0");
+                var minute = date.getMinutes().toString().padStart(2, "0");
+                var second = date.getSeconds().toString().padStart(2, "0");
+
+                return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+            }
+        }
+    })
+
+
+</script>

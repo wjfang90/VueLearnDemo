@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./lib/vue-2.4.0.js"></script>
+    <script src='./lib/vue-router-3.0.1.js'></script>
+
+    <style>
+        /*router-link-active 是router-link标签的默认的class名，myactive是自定义样式名*/
+        .router-link-active,
+        .myactive {
+            color: red;
+            font-style: italic;
+            text-decoration: underline;
+        }
+
+        .v-enter,
+        .v-leave-to {
+            opacity: 0;
+            transform: translateX(140px);
+        }
+
+        .v-enter-active,
+        .v-leave-active {
+            transition: all 0.5s ease;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!--
+
+        1.路由的创建与使用
+        2.路由的引用组件
+        3.路由组件添加动画
+        4.路由组件设置自定义样式
+        5.路由参数传递方式与参数获取
+        6.路由组件的嵌套
+    -->
+
+    <div id="app">
+
+        <div>
+            <!--用a 标签实现每次都要url上手动添加 #-->
+            <h4>1.用a 标签访问</h4>
+            <a href="#/">首页</a>
+            <a href="#/login">登录</a>
+            <a href="#/register">注册</a>
+            <a href="#/reg">跳转到注册</a>
+        </div>
+
+        <div>
+            <h4>2.用router-link 标签访问</h4>
+
+            <!--用router-link 实现每次在url上自动添加 # ,tag属性 tag=span 可以设置标签为span-->
+            <!--参数传递方式--1.使用 查询字符串，给路由传递参数，则 不需要修改 路由规则的 path 属性 -->
+            <router-link to="/login?user=fang&pwd=123" tag='span'>登录</router-link>
+            <!--参数传递方式--2.1路由传参数方式-->
+            <router-link to="/register/lili/111">注册</router-link>
+
+            <router-link to="/reg">跳转到注册</router-link>
+
+            <p>----router.path={{this.$route.path}}</p>
+        </div>
+
+        <div>
+            <h4>3.路由组件嵌套</h4>
+            <router-link to="/account">跳转到账号</router-link>
+        </div>
+
+        <hr>
+        <!--路由添加动画效果-->
+        <transition mode='out-in'>
+            <!-- vue-router 提供的元素，当作占位符的，路由匹配到的组件将渲染在 router-view 中-->
+            <router-view></router-view>
+        </transition>
+
+    </div>
+
+    <template id="accountTmp">
+        <div>
+            <h4>账号组件</h4>
+            <router-link to="/account/login">跳转到登录</router-link>
+            <router-link to="/account/register">跳转到注册</router-link>
+            <!--注意：在账号组件中要设置router-view 显示子组件-->
+            <router-view></router-view>
+        </div>
+    </template>
+
+    <script>
+
+        //定义登录组件模板对象
+        var login = {
+            template: '<p>登录组件</p>',
+            created() {
+                // debugger;
+                //$route 访问当前的路由对象
+                console.log('---route.path=' + this.$route.path);
+
+                //this.$route.query 访问url参数
+                console.log('---route.query.user=' + this.$route.query.user);
+                console.log('---route.query.pwd=' + this.$route.query.pwd);
+            }
+        }
+
+        var register = {
+            template: '<p>注册组件</p>',
+            created() {
+                // debugger;
+                //this.$route.params 访问url参数
+                console.log('---route.params.user=' + this.$route.params.user);
+                console.log('---route.params.pwd=' + this.$route.params.pwd);
+            }
+        }
+
+        var account = {
+            template: '#accountTmp'
+        }
+
+        // 在 new 路由对象的时候，可以为 构造函数，传递一个配置对象
+        var routerObj = new VueRouter({
+            //routes 设置路由匹配规则，可以有多个规则
+            // 每个路由规则，都是一个对象，这个规则对象，身上，有两个属性：
+            //  path 表示监听 哪个路由链接地址；
+            //  component 表示，如果 路由是前面匹配到的 path ，则展示 component 属性对应的那个组件
+            // 注意： component 的属性值，必须是一个 组件的模板对象， 不能是组件的引用名称；
+            routes: [
+                {
+                    path: '/'
+                },
+                {
+                    path: '/login',//定义设置路由匹配规则
+                    component: login // 设置路由匹配成功后显示的组件
+                },
+                {
+                    path: "/register", //参数传递方式--2.2设置路由path
+                    component: register
+                },
+                {
+                    path: "/register/:user/:pwd", //参数传递方式--2.2设置路由path
+                    component: register
+                },
+                {
+                    path: "/reg",
+                    redirect: '/register' //重定向到/register,这里的 redirect 和 Node 中的 redirect 完全是两码事
+                    // component: register
+                },
+
+                //路由组件的嵌套
+                {
+                    path: '/account',
+                    component: account,
+                    // 使用 children 属性，实现子路由，子路由的 path 前面，不要带 / ，否则永远以根路径开始请求，这样不方便我们用户去理解URL地址
+                    children: [
+                        {
+                            path: 'login',
+                            component: login
+                        },
+                        {
+                            path: 'register',
+                            component: register
+                        }
+                    ]
+                }
+            ],
+            /*
+                router-link-active 是router-link标签的默认的class名,可以设置linkActiveClass 自定义样式名myactive
+                注意：注册为 route中 使用component 方式 才会添加 linkActiveClass样式，redirect 方式不显示样式名
+            */
+            linkActiveClass: 'myactive'
+        })
+
+        var vm = new Vue({
+            el: '#app',
+            router: routerObj // 将路由规则对象，注册到 vm 实例上，用来监听 URL 地址的变化，然后展示对应的组件
+        })
+    </script>
+</body>
+
+</html>

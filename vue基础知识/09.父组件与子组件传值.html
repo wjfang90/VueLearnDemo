@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./lib/vue-2.4.0.js"></script>
+</head>
+
+<body>
+
+
+    <!--1. 父组件数据传递给子组件使用 v-bind属性绑定和组件和props属性-->
+    <!--1.1 在子组件上v-bind属性绑定listitem父组件的一个集合对象，在子组件中的props中添加 listitem，就可以在子组件中使用listitem对象-->
+    <!--2. 子组件调用父组件的方法 使用v-on事件绑定和 emit触发绑定事件，并可以传参数给父组件-->
+    <!--3. 父组件通过ref访问子组件实例或子元素-->
+
+    <!--    
+    props 
+    
+    1.大小写：
+    HTML 中的 attribute 名是大小写不敏感的，所以浏览器会把所有大写字符解释为小写字符。这意味着当你使用 DOM 中的模板时，camelCase (驼峰命名法) 的 prop 名需要使用其等价的 kebab-case (短横线分隔命名) 命名
+    如果你使用字符串模板，那么这个限制就不存在了
+
+    2.数据类型
+    props: {
+        title: String,
+        likes: Number,
+        isPublished: Boolean,
+        commentIds: Array,
+        author: Object,
+        callback: Function,
+        contactsPromise: Promise // or any other constructor
+    }
+
+    3.绑定静态字符串
+    <blog-post title="My journey with Vue"></blog-post>
+
+    4.动态值v-bind属性绑定
+
+     bool值 包含该 prop 没有值的情况在内，都意味着 is-published=true                
+    <blog-post is-published></blog-post>
+
+    注意：在 JavaScript 中对象和数组是通过引用传入的，所以对于一个数组或对象类型的 prop 来说，在子组件中改变变更这个对象或数组本身将会影响到父组件的状态
+
+    5.所有的 prop 都使得其父子 prop 之间形成了一个单向下行绑定：父级 prop 的更新会向下流动到子组件中，但是反过来则不行                
+    组件中的 所有 props 中的数据，都是通过 父组件传递给子组件的
+    props 中的数据，都是只读的，无法重新赋值
+
+    6. prop验证
+    基础的类型检查、默认值、是否必填、
+    注意那些 prop 会在一个组件实例创建之前进行验证，所以实例的 property (如 data、computed 等) 在 default 或 validator 函数中是不可用的
+
+    -->
+
+    <div id="app">
+        <!-- 父组件可以在引用子组件的时候， 通过属性绑定（v-bind:） 把父组件数据传递到子组件内部 -->
+        <!-- 子组件调用父组件的方法使用事件绑定 -->
+        <!--注意绑定的属性名和事件绑定的名称 使用驼峰命名或使用 kebab-case命名规则，全部小写不需要修改-->
+        <h4>1.父组件数据v-bind和props传递给子组件------子组件v-on和emit调用父组件方法</h4>
+        <comp1 :parent-data='parentMsg' @parent-func='show'></comp1>
+        <!-- <comp1 :parentdata='parentMsg' @parent-func='show'></comp1> -->
+
+
+        <h4>2.子组件v-bind和props 属性可以绑定 一个对象，不必一一绑定多个变量 </h4>
+        <!--在子组件上属性绑定listitem父组件的一个集合对象，在子组件中的props中添加 listitem，就可以在子组件中使用listitem对象了-->
+        <bindlistcomp v-for="dataitem in dataList" :key="dataitem.id" :listitem='dataitem'></bindlistcomp>
+
+
+        <h4>3.父组件通过 ref 调用子组件中的数据和方法</h4>
+        <button @click='getChild'>调用子组件中的数据和方法</button>
+        <p>父组件 ：{{parentMsg}}</p>
+        <comp2 ref='childComp'></comp2>
+
+    </div>
+
+    <template id='tmp'>
+        <div>
+            <p>子组件：{{parentData}}</p>
+            <button @click='execureParentMethod'>调用父组件中的show方法</button>
+        </div>
+    </template>
+
+    <template id="listComp">
+        <div>
+            <!--在子组件上属性绑定listitem父组件的一个集合对象，在子组件中的props中添加 listitem，就可以在子组件中使用listitem对象了-->
+            <p>{{listitem.id}}------{{listitem.name}}</p>
+        </div>
+    </template>
+
+</body>
+
+</html>
+
+<script>
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            parentMsg: '父级件中的msg',
+            dataList: [{ id: 1, name: 'fang' }, { id: 2, name: 'lili' }]
+        },
+        methods: {
+            show(param) {
+                this.parentMsg += '---' + param;
+                console.log("执行了父组件中的show方法---" + param);
+            },
+            getChild() {
+                console.log('---执行了父组件中的getChild---');
+                
+                //$refs 只会在组件渲染完成之后生效，并且它们不是响应式的。这仅作为一个用于直接操作子组件的“逃生舱”——你应该避免在模板或计算属性中访问 $refs
+                //通过ref访问子组件的data数据childCompMsg
+                this.parentMsg += '-----' + this.$refs.childComp.childCompMsg;
+                
+                //通过 ref 调用子组件中的getChildElemet方法
+                this.$refs.childComp.getChildElemet();
+            }
+        },
+        components: {
+            'comp1': {
+                data() {
+                    return {
+                        compMsg: '子组件中的msg'
+                    }
+                },
+                props: ['parentData'],// 把父组件传递过来的 parentdata 属性，先在 props 数组中，定义一下，这样，才能使用这个数据
+                template: '#tmp',
+                methods: {
+                    execureParentMethod() {
+                        // console.log('compontent.execureParentMethod');
+                        //emit('绑定的事件名称',参数1,参数2)  英文原意： 是触发，调用、发射的意思   
+                        // 使用 emit 在子组件中调用父附件绑定到组件模板上的绑定事件parent-func，                 
+                        this.$emit('parent-func', this.compMsg);
+                    }
+                },
+            },
+            //props可以绑定一个集合对象
+            'bindlistcomp': {
+                props: ['listitem'],
+                template: '#listComp'
+            },
+            'comp2': {
+                data() {
+                    return {
+                        childCompMsg: 'ref 子组件的msg'
+                    }
+                },
+                methods: {
+                    getChildElemet() {
+
+                        console.log('通过 ref 执行了子组件中的方法');
+                    }
+                },
+                template: '<p> ref 调用子组件中的数据和方法</p>'
+            }
+        }
+    })
+</script>

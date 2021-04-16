@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./lib/bootstrap-3.3.7.css">
+    <script src="./lib/vue-2.4.0.js"></script>
+</head>
+
+<body>
+    <div id="app">
+
+        <!--在子组件上绑定父组件的方法loadComments-->
+        <commentfromcomp @parentfunc='loadComments'></commentfromcomp>
+
+        <ul class="list-group">
+            <li class="list-group-item" v-for="(item, index) in comments" :key="item.id">
+                <span class="badge">{{item.username}}</span>
+                <span>{{ item.comment }}</span>
+            </li>
+        </ul>
+    </div>
+
+    <template id="commentFromTmp">
+        <div>
+            <div class="form-group">
+                <label>评论人：</label>
+                <input type="text" class="form-control" v-model="username">
+            </div>
+
+            <div class="form-group">
+                <label>评论内容：</label>
+                <textarea class="form-control" v-model="comment"></textarea>
+            </div>
+
+            <div class="form-group">
+                <input type="button" value="发表评论" class="btn btn-primary" @click="postComment">
+            </div>
+        </div>
+    </template>
+</body>
+
+</html>
+<script>
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            comments: []
+        },
+        created() {
+            //el属性不能使用，data和methods 可以使用了
+
+            //初始化部分数据，The static Date.now() method returns the number of milliseconds elapsed since January 1, 1970 00:00:00 UTC.
+            var oldComments = [
+                { id: Date.now(), username: 'fang', comment: 'fang 仔，what are you 弄啥咧' },
+                { id: Date.now(), username: 'lili', comment: 'lili,我想去恩施春游' }
+            ];
+            var comments = JSON.stringify(oldComments);
+            localStorage.setItem('comments', comments);
+
+            this.loadComments();
+
+        },
+        methods: {
+            loadComments() {
+                var oldCommentsStr = localStorage.getItem('comments') || '[]';
+                this.comments = JSON.parse(oldCommentsStr);
+            }
+
+        }, 
+        components: {
+            'commentfromcomp': {
+                data() {
+                    return {
+                        username: '',
+                        comment: ''
+                    }
+                },
+                template: '#commentFromTmp',
+                methods: {
+                    postComment() {
+                        //localStorage 只支持字符串类型
+                        var oldComments = localStorage.getItem('comments') || '[]';
+                        var comments = JSON.parse(oldComments);
+
+                        var postComment = { id: Date.now(), username: this.username, comment: this.comment };
+                        comments.unshift(postComment);
+
+                        var commentsStr = JSON.stringify(comments);
+                        localStorage.setItem('comments', commentsStr);
+
+                        this.username = this.comment = ''
+
+                        //评论保存到localStorage后，重新加载到页面上，调用父组件中的loadComments 方法就可以了
+
+                        this.$emit('parentfunc');
+                    }
+                },
+            }
+        }
+
+
+    })
+</script>

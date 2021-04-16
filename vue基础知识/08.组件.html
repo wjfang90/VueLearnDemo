@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./lib/vue-2.4.0.js"></script>
+    <style>
+        .v-enter,
+        .v-leave-to {
+            opacity: 0;
+            transform: translateX(150px);
+        }
+
+        .v-enter-active,
+        .v-leave-active {
+            transition: all 0.5s ease;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <my-global-comp1></my-global-comp1>
+        <myglobalcomp2></myglobalcomp2>
+        <myglobalcomp3></myglobalcomp3>
+
+        <myprivatecomp1></myprivatecomp1>
+        <myprivatecomp2></myprivatecomp2>
+
+        <myglobalcom4></myglobalcom4>
+
+        <h3>vue添加组件data的原因</h3>
+        <div>
+            <myglobalcom-data-count></myglobalcom-data-count>
+            <myglobalcom-data-count></myglobalcom-data-count>
+            <myglobalcom-count></myglobalcom-count>
+            <myglobalcom-count></myglobalcom-count>
+        </div>
+
+        <h3>
+            组件切换 if-else方式
+        </h3>
+        <div>
+            <a href="" @click.prevent='loginFlag=true'>登录</a>
+            <a href="" @click.prevent='loginFlag=false'>注册</a>
+            <login v-if="loginFlag"></login>
+            <register v-else="loginFlag"></register>
+        </div>
+
+        <div>
+            <h3>组件切换 component方式</h3>
+            <a href="" @click.prevent='compName="login"'>登录</a>
+            <a href="" @click.prevent='compName="register"'>注册</a>
+            <!-- component 展示对应名称的组件, 是一个占位符, :is 属性,可以用来指定要展示的组件的名称 -->
+            <component :is="compName"></component>
+
+
+            <!-- transition 通过 mode 属性,设置组件切换时候的 模式 
+                    in-out：新元素先进行过渡，完成之后当前元素过渡离开。
+                    out-in：当前元素先进行过渡，完成之后新元素过渡进入。
+            -->
+            <h4>组件切换 component方式添加动画</h4>
+            <transition mode='out-in'>
+                <component :is="compName"></component>
+            </transition>
+        </div>
+    </div>
+
+
+    <!-- 在 被控制的 #app 外面,使用 template 元素,定义组件的HTML模板结构  -->
+    <template id="mytmp">
+        <div>
+            <p>template 元素在外部定义的组件方式</p>
+        </div>
+    </template>
+
+    <!--全局data计数器模板-->
+    <template id="globalCountTmp">
+        <div>
+            <button @click="increase">加1</button>
+            <p>全局计数器(所有组件数据都加1)：{{dataCount}}</p>
+        </div>
+    </template>
+
+    <!--组件data计数器模板-->
+    <template id="countTmp">
+        <div>
+            <button @click="increase">加1</button>
+            <p>组件计数器(只操作当前组件数据)：{{compCount}}</p>
+        </div>
+    </template>
+
+    <script>
+
+        /*组件命名大小写两种方式 
+         1.使用 kebab-case
+         Vue.component('my-component-name', {  }) 
+         当使用 kebab-case (短横线分隔命名) 定义一个组件时，你也必须在引用这个自定义元素时使用 kebab-case，例如 <my-component-name>
+        
+        2.使用 PascalCase
+        Vue.component('MyComponentName', {  })
+        当使用 PascalCase (首字母大写命名) 定义一个组件时，你在引用这个自定义元素时两种命名法都可以使用。也就是说 <my-component-name> 和 <MyComponentName> 都是可接受的。
+        注意，尽管如此，直接在 DOM (即非字符串的模板) 中使用时只有 kebab-case 是有效的。
+        */
+
+        //全局组件
+        //注册之后可以用在任何新创建的 Vue 根实例 (new Vue) 的模板中
+        //全局注册的行为必须在根 Vue 实例 (通过 new Vue) 创建之前发生
+        
+        // 使用 Vue.component('组件的名称', 创建出来的组件模板对象)         
+        // 第二个参数: Vue.extend 创建的组件  ,其中 template 就是组件将来要展示的HTML内容
+        Vue.component('myGlobalComp1', Vue.extend({
+            template: '<p>Vue.extend 定义组件方式</p>'
+        }))
+
+        Vue.component('myglobalcomp2', {
+            //模板内容必须有且只能有唯一的一个根元素
+            template: '<div><p>Vue.extend 简写对象定义组件方式</p></div>'
+        })
+
+        //// 注意:不论是哪种方式创建出来的组件,组件的 template 属性指向的模板内容,必须有且只能有唯一的一个根元素
+        Vue.component('myglobalcomp3', {
+            template: '#mytmp'
+        })
+
+
+
+
+        // 1. 组件可以有自己的 data 数据
+        // 2. 组件的 data 和 实例的 data 有点不一样,实例中的 data 可以为一个对象,但是 组件中的 data 必须是一个方法
+        // 3. 组件中的 data 除了必须为一个方法之外,这个方法内部,还必须返回一个对象才行;
+        // 4. 组件中 的data 数据,使用方式,和实例中的 data 使用方式完全一样!!!
+        Vue.component('myglobalcom4', {
+            data() {
+                return {
+                    msg: '这是组件中data中的msg数据'
+                }
+            },
+            template: '<p>组件中的data数据----{{msg}}</p>'
+        })
+
+
+        //全局data计数器
+        var dataObj = { dataCount: 0 }
+        Vue.component('myglobalcom-data-count', {
+            data() {
+                return dataObj
+            },
+            template: '#globalCountTmp',
+            methods: {
+                increase() {
+                    this.dataCount++;
+                }
+            }
+        })
+
+        //组件data计数器
+        Vue.component('myglobalcom-count', {
+            data() {
+                return {
+                    compCount: 0
+                }
+            },
+            template: '#countTmp',
+            methods: {
+                increase() {
+                    this.compCount++;
+                }
+            }
+        })
+
+
+        var myprivatecomp2 = {
+            template: '<p>定义私有组件简写方式</p>'
+        }
+
+        var vm = new Vue({
+            el: '#app',
+            data: {
+                loginFlag: true,
+                compName: 'login'// compName 当前 component 中的 :is 绑定的组件的名称
+            },
+            methods: {
+
+            },
+
+            //私有组件
+            components: {
+                'myprivatecomp1': {
+                    template: '<p>定义私有组件</p>'
+                },
+                myprivatecomp2,  //组件简写，组件名称是myprivatecomp2
+                'login': {
+                    template: '<p>当前是登录组件</p>'
+                },
+                'register': {
+                    template: '<p>当前是注册组件</p>'
+
+                }
+            }
+        })
+
+    </script>
+</body>
+
+</html>

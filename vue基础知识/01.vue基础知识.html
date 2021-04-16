@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./lib/vue-2.4.0.js"></script>
+</head>
+<style>
+    [v-cloak] {
+        display: none;
+    }
+
+    .inner {
+        height: 50px;
+        background-color: darkcyan;
+    }
+
+    .outer {
+        padding-bottom: 20px;
+        background-color: red;
+    }
+
+    .red {
+        color: red;
+    }
+
+
+    .italic {
+        font-style: italic;
+    }
+
+    .active {
+        letter-spacing: 0.5em;
+    }
+</style>
+
+<body>
+    <div id="app">
+        <div>
+            <h3>
+                1.兼容性Vue 不支持 IE8 及以下版本，因为 Vue 使用了 IE8 无法模拟的 ECMAScript 5 特性。但它支持所有兼容 ECMAScript 5 的浏览器。
+            </h3>
+
+            <h3>2.插值表达式</h3>
+            <p>
+                <!--网速慢会先显示插值表达式，再替换成表达式计算结果-->
+            <p>==={{msg}}====</p>
+            <p>==={{msg+'拼接表达式'}}===</p>
+            <p>1+1={{1+1}}</p>
+            <p>1+1>2:{{1+1>2?'是':'否'}}</p>
+            </p>
+            <!--指令 (Directives) 是带有 v- 前缀的特殊 attribute-->
+            <h3>3.v-cloak</h3>
+            <!-- 使用 v-cloak 能够解决 插值表达式闪烁的问题 -->
+            <p v-cloak>{{msg}}</p>
+
+
+            <h3>4.v-text</h3>
+            <!-- 默认 v-text 是没有闪烁问题的 -->
+            <!-- v-text会覆盖元素中原本的内容，但是 插值表达式  只会替换自己的这个占位符，不会把 整个元素的内容清空 -->
+            <p v-text="msg"></p>
+
+
+            <h3>5.v-html</h3>
+            <!--你的站点上动态渲染的任意 HTML 可能会非常危险，因为它很容易导致 XSS 攻击。请只对可信内容使用 HTML 插值，绝不要对用户提供的内容使用插值。-->
+            <p v-html="htmlmsg"></p>
+
+
+            <h3>6.v-bind 属性绑定</h3>
+            <p>
+                <!-- v-bind: 是 Vue中，提供的用于绑定属性的指令，单向绑定数据，从 M 自动绑定到 V -->
+                <!-- 注意： v-bind: 指令可以被简写为 :要绑定的属性 -->
+                <!-- v-bind 中，可以写合法的JS表达式 -->
+                <input type="button" value="按钮" v-bind:title="mytitle + '123'">
+                <a :title="mytitle" href="#">自定义属性绑定</a>
+
+            <p>
+                <!--如果 isButtonDisabled 的值是 null、undefined 或 false，则 disabled attribute 甚至不会被包含在渲染出来的 <button> 元素中-->
+                <button v-bind:disabled="isButtonDisabled=null">布尔 attribute Button</button>
+                <button v-bind:disabled="isButtonDisabled=false">布尔 attribute Button</button>
+                <button v-bind:disabled="isButtonDisabled=true">布尔 attribute Button</button>
+            </p>
+            </p>
+
+            <h3>7.v-model</h3>
+            <!-- 使用  v-model 指令，可以实现 表单元素和 Model 中数据的双向数据绑定 -->
+            <!-- 注意： v-model 只能运用在 表单元素中 -->
+            <!-- input(radio, text, address, email....)   select    checkbox   textarea   -->
+            <!--v-model 会忽略所有表单元素的 value、checked、selected attribute 的初始值而总是将 Vue 实例的数据作为数据来源。你应该通过 JavaScript 在组件的 data 选项中声明初始值。-->
+            <!--在文本区域插值 (<textarea>{{text}}</textarea>) 并不会生效，应用 v-model 来代替。-->
+            <input type="text" style="width:100%;" v-model="msg">
+
+            <h4>表单元素修饰符</h4>
+            <!-- 在“change”时而非“input”时更新 -->
+            <input v-model.lazy="msg"><br />
+
+            <!--自动将用户的输入值转为数值类型-->
+            <input v-model.number="age" type="number"><br />
+
+            <!--自动过滤用户输入的首尾空白字符-->
+            <input v-model.trim="msg">
+
+            <h4>8.v-on事件绑定</h4>
+            <!--v-on 指令，它用于监听 DOM 事件，简写@-->
+            <button v-on:click="myalert">button</button>
+            <button @click="myalert">button</button>
+
+
+            <h3>9.v-if和v-show区别</h3>
+            <p>
+                <!--永远不要把 v-if 和 v-for 同时用在同一个元素上-->
+            <h4>if else</h4>
+            <p v-if="isShow">Vue is awesome!</p>
+            <!--v-else 元素必须紧跟在带 v-if 或者 v-else-if 的元素的后面，否则它将不会被识别-->
+            <!--v-else-if 2.1.0 新增，跟v-else一样使用-->
+            <p v-else>Oh no 😢</p>
+
+
+            <h4>if template</h4>
+            <!--想切换多个元素呢？此时可以把一个 <template> 元素当做不可见的包裹元素，并在上面使用 v-if-->
+            <template v-if="isShow">
+                <p>Title</p>
+                <p>Paragraph 1</p>
+                <p>Paragraph 2</p>
+            </template>
+
+
+            <h4>key attribute 管理可复用元素</h4>
+            <template v-if="loginType">
+                <label>Username</label>
+                <input placeholder="Enter your username">
+            </template>
+            <template v-else>
+                <label>Email</label>
+                <input placeholder="Enter your email address">
+            </template>
+            <!--那么在上面的代码中切换 loginType 将不会清除用户已经输入的内容。因为两个模板使用了相同的元素，<input> 不会被替换掉——仅仅是替换了它的 placeholder-->
+
+            <template v-if="loginType">
+                <label>Username</label>
+                <input placeholder="Enter your username" key="username-input">
+            </template>
+            <template v-else>
+                <label>Email</label>
+                <input placeholder="Enter your email address" key="email-input">
+            </template>
+            <button @click="loginType =!loginType">toggle</button>
+            </p>
+            <p>
+                <!-- v-if 的特点：每次都会重新删除或创建元素 -->
+                <!-- v-show 的特点： 每次不会重新进行DOM的删除和创建操作，只是切换了元素的 display:none 样式 -->
+
+                <!-- v-if 有较高的切换性能消耗 -->
+                <!-- v-show 有较高的初始渲染消耗 -->
+
+                <!-- 如果元素涉及到频繁的切换，最好不要使用 v-if, 而是推荐使用 v-show -->
+                <!-- 如果元素可能永远也不会被显示出来被用户看到，则推荐使用 v-if -->
+
+                <!--v-show 不支持 <template> 元素，也不支持 v-else-->
+            <p v-if="isShow">这是用v-if控制的元素</p>
+            <p v-show="isShow">这是用v-show控制的元素</p>
+            <button @click="toggle">toggle</button>
+            </p>
+
+            <h3>10.事件修饰符</h3>
+            <p>
+                <!--修饰符 (modifier) 是以半角句号 . 指明的特殊后缀，用于指出一个指令应该以特殊方式绑定。例如，.prevent 修饰符告诉 v-on 指令对于触发的事件调用 event.preventDefault()-->
+
+
+            <h4>默认事件处理</h4>
+            <!--默认事件处理使用冒泡处理机制，即从内层到外层触发事件-->
+            <div class="outer" @click="divOuterHandler">
+                <div class="inner" @click="divInnerHandler">
+                    <input type="button" value="戳他" @click="btnHandler">内层div
+                </div>
+                外层div
+            </div>
+
+
+            <h4>使用 .stop 阻止冒泡</h4>
+            <div class="inner" @click="divInnerHandler">
+                <input type="button" value="戳他" @click.stop="btnHandler">
+            </div>
+
+
+            <h4> 使用 .capture 实现捕获触发事件的机制</h4>
+            <!--捕获机制是从外层向内部的顺序触发事件-->
+            <div class="outer" @mouseover.capture="divOuterHandler">
+                <div class="inner" @mouseover.capture="divInnerHandler">
+                    <div style="background-color: blue; height: 20px;" @mouseover="btnHandler">内层div</div>中间层div
+                </div>
+                外层div
+            </div>
+
+            <h4>.self 只有自己身上事件行为的触发</h4>
+            <div class="outer" @click="divOuterHandler">
+                <div class="inner" @click.self="divInnerHandler">
+                    <input type="button" value="button不会触发内层div" @click="btnHandler">内层div只点击自己才触发
+                </div>
+                外层div
+            </div>
+
+            <h4>使用 .prevent 阻止默认行为</h4>
+            <a href="http://www.baidu.com" @click.prevent="linkClick">先去百度</a><br>
+            <a href="http://www.baidu.com" @click.prevent.once="linkClick">先去百度,只阻止一次</a>
+            </p>
+
+            <h3>11.class绑定样式</h3>
+            <!--注意：数组内的样式名要加引号，不加引号表示的是vm实例的属性-->
+            <p :class="['red','italic']">class绑定 数组方式</p>
+            <p :class="['red','italic',true?'active':'']">class绑定 数组方式--使用三元表达式 </p>
+            <p :class="['red','italic',{'active':true}]">class绑定 数组方式--对象来代替三元表达式 </p>
+            <!-- 在为 class 使用 v-bind 绑定 对象的时候，对象的属性是类名-->
+            <p :class="classObject">class绑定 对象方式 </p>
+
+
+            <h3>12.style绑定样式</h3>
+            <!--v-bind:style 的对象语法十分直观——看着非常像 CSS，但其实是一个 JavaScript 对象-->
+            <p :style="{color:'red','font-style':'italic'}">style绑定对象样式</p>
+            <p :style="[{'letter-spacing':'0.5em'},styleObject]">style绑定数组样式</p>
+
+            <!--当 v-bind:style 使用需要添加浏览器引擎前缀的 CSS property 时，如 transform，Vue.js 会自动侦测并添加相应的前缀-->
+            <!--这样写只会渲染数组中最后一个被浏览器支持的值。在本例中，如果浏览器支持不带浏览器前缀的 flexbox，那么就只会渲染 display: flex-->
+            <div :style="{ display: ['-webkit-box', '-ms-flexbox', 'flex'] }">2.3.0+ 多重值</div>
+
+
+            <h3>13.v-for</h3>
+            <!-- 注意： v-for 循环的时候，key 属性只能使用 number获取string -->
+            <!-- 注意： key 在使用的时候，必须使用 v-bind 属性绑定的形式，指定 key 的值 -->
+            <!--有相同父元素的子元素必须有独特的 key。重复的 key 会造成渲染错误-->
+            <h4>v-for数字</h4>
+            <ul>
+                <!--在 v-for 块中，我们可以访问所有父作用域的 property msg-->
+                <li v-for="(item, index) in 5" :key="index">{{msg}}------ 数据项={{item}}---索引={{index}}</li>
+            </ul>
+            <h4>v-for数组</h4>
+            <ul>
+                <!--可以用of 替代 in 作为分隔符-->
+                <li v-for="(item, index) of itemArray" :key="item.message">{{item.message}}</li>
+            </ul>
+            <h4>v-for数组简写</h4>
+            <ul>
+                <li v-for="item in itemArray" :key="item.message">{{item.message}}</li>
+            </ul>
+
+            <h4>v-for对象属性</h4>
+            <ul>
+                <!-- 注意：在遍历对象身上的键值对的时候， 除了 有  val  key  ,在第三个位置还有 一个 索引  -->
+                <li v-for="(itemValue,itemKey,index) in itemObject" :key="itemValue">
+                    属性名={{itemKey}}----属性值={{itemValue}}---索引值={{index}}</li>
+            </ul>
+            <h4>v-for对象属性简写</h4>
+            <ul>
+                <li v-for="value in itemObject" :key="value">属性值={{value}}</li>
+            </ul>
+
+            <h3>14.计算属性</h3>
+            <label>
+                firstname<input type="text" v-model='firstname'>
+            </label>
+            <label>
+                lastname<input type="text" v-model='lastname'>
+            </label>
+
+            <label for="fullname">fullname</label>
+            <input type="text" name="" id="fullname" v-model='fullname'>
+            <p>----{{fullname}}----</p>
+        </div>
+    </div>
+</body>
+
+<script>
+    var vm = new Vue({
+        el: "#app",// el 表示绑定的vue的DOM元素，可以是 CSS 选择器，也可以是一个 HTMLElement 实例。
+        //data 中的 property 才是响应式的
+        data: {
+            msg: "hello world",
+            htmlmsg: "<p style='color:red'>这是一个html表达式</p>",
+            mytitle: '自定义属性mytitle',
+            age: 0,
+            isButtonDisabled: null,
+            isShow: true,
+            loginType: true,
+            //由于 对象的属性可带引号，也可不带引号，所以 这里我没写引号；  属性的值 是一个标识符
+            classObject: { 'red': true, italic: true, active: false },
+            styleObject: { 'color': 'red', 'font-style': 'italic' },
+            itemArray: [
+                { message: 'Foo' },
+                { message: 'Bar' }
+            ],
+            itemObject: {
+                id: 1,
+                name: "张三",
+                gender: '男'
+            },
+            firstname: '',
+            lastname: ''
+        },
+        //计算属性，做简单的数据处理
+        // 计算属性的本质是 一个方法，直接当作属性使用；并不会把计算属性当作方法调用；
+
+        // 注意1： 计算属性，在引用的时候，一定不要加 () 去调用，直接把它 当作 普通 属性去使用就好了；
+        // 注意2： 只要 计算属性，这个 function 内部，所用到的 任何 data 中的数据发送了变化，就会 立即重新计算 这个 计算属性的值
+        // 注意3： 计算属性的求值结果，会被缓存起来，方便下次直接使用； 如果 计算属性方法中，所以来的任何数据，都没有发生过变化，则，不会重新对 计算属性求值；
+        computed: {
+            "fullname": function () {
+                console.log('只调用一次计算属性，多次调用直接从缓存中取值，不会重新计算');
+                return this.firstname + ' ' + this.lastname;
+            }
+        },
+        methods: {
+            //自定义方法
+            myalert: function () {
+                //内部使用this 访问vue实例                
+                console.log(this.msg)
+                alert('v-on事件触发了')
+            },
+            //方法简写形式           
+            toggle() {
+                this.isShow = !this.isShow
+            },
+
+            btnHandler() {
+                console.log("触发了btn的click事件")
+            },
+            divInnerHandler() {
+                console.log("触发了inner div的click事件")
+            },
+            divOuterHandler() {
+                console.log("触发了outer div的click事件")
+            },
+            linkClick() {
+                console.log('触发了a 的点击事件')
+            }
+        },
+        watch: {
+            fullname: function (newValue, oldValue) {
+                console.log('fullname newValue=' + newValue + '----fullname oldValue=' + oldValue);
+            }
+        }
+    })
+
+    //vm实例方法和实例属性使用 $访问
+
+    //监视vm.data.msg的变化，变化后触发
+    vm.$watch('msg', function (newValue, oldValue) {
+
+        //`${}` 字符串格式化
+        console.log(`newValue=${newValue}----oldValue=${oldValue}`)
+    })
+
+    vm.$data.msg += ' modify by fang'
+    console.log(vm.$el.getAttribute("id"))
+
+</script>
+
+</html>

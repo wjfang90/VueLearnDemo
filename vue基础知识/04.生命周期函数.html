@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./lib/vue-2.4.0.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <p>{{msg}}</p>
+        <button @click="msg='hello fang modified'">修改数据</button>
+    </div>
+</body>
+
+</html>
+<script>
+
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            msg: 'hello fang'
+        },
+        beforeCreate() {
+            // 这是我们遇到的第一个生命周期函数
+            // 在实例初始化之后(实例完全被创建出来之前)，数据观测 (data observer) 和 event/watcher 事件配置之前被调用
+            // 注意： 在 beforeCreate 生命周期函数执行的时候，data 和 methods 中的 数据都还没有没初始化
+            // debugger;            
+            console.log("-----before create----");
+            console.log('vm=' + this);
+            console.log('vm==undefined:' + (this == undefined));
+        },
+        created() {
+            //在实例创建完成后被立即调用。在这一步，实例已完成以下的配置：数据观测 (data observer)，property 和方法的运算，watch/event 事件回调。
+            //然而，挂载阶段还没开始，$el property 目前尚不可用。
+            //  在 created 中，data 和 methods 都已经被初始化好了！
+            // debugger;
+            console.log("----created-----");
+            console.log('vue.el=' + this.$el);
+            console.log('vue.data.msg:' + this.msg);
+        },
+        beforeMount() {
+            //在挂载开始之前被调用：相关的 render 函数首次被调用。该钩子在服务器端渲染期间不被调用。
+            // 表示 模板已经在内存中编辑完成了，但是尚未把 模板渲染到 页面中,  
+            // 在 beforeMount 执行的时候，页面中的元素，还没有被真正替换过来，只是之前写的一些模板字符串
+            // debugger;
+            console.log("----before mount----");
+            console.log('vue.el.outerHTML=' + this.$el.outerHTML);
+            console.log('页面上值：' + document.getElementsByTagName('p')[0].innerText);
+            console.log('vue.data.msg:' + this.msg);
+        },
+        mounted() {
+            //实例被挂载后调用，这时 el 被新创建的 vm.$el 替换了。如果根实例挂载到了一个文档内的元素上，当 mounted 被调用时 vm.$el 也在文档内。
+            //注意 mounted 不会保证所有的子组件也都一起被挂载。如果你希望等到整个视图都渲染完毕，可以在 mounted 内部使用 vm.$nextTick：
+            // debugger;
+
+            console.log("----mounted----");
+            console.log('vue.el.outerHTML=' + this.$el.outerHTML);
+            console.log('页面上值：' + document.getElementsByTagName('p')[0].innerText);
+            console.log('vue.data.msg:' + this.msg);
+
+            //nextTick 将回调延迟到下次 DOM 更新循环之后执行。在修改数据之后立即使用它，然后等待 DOM 更新。它跟全局方法 Vue.nextTick 一样，不同的是回调的 this 自动绑定到调用它的实例上。
+            this.$nextTick(function () {
+                // 仅在整个视图渲染后才运行的代码
+                console.log("render all page mounted");
+            })
+        },
+        beforeUpdate() {
+            //数据更新时调用，发生在虚拟 DOM 打补丁之前。这里适合在更新之前访问现有的 DOM，比如手动移除已添加的事件监听器。
+            // 该钩子在服务器端渲染期间不被调用，因为只有初次渲染会在服务端进行。
+            //当执行 beforeUpdate 的时候，页面中的显示的数据，还是旧的，此时 data 数据是最新的，页面尚未同步最新的数据
+            // debugger;
+            console.log("----before update----");
+            console.log('页面上值：' + document.getElementsByTagName('p')[0].innerText);
+            console.log('vue.data.msg:' + this.msg);
+        },
+        updated() {
+            // 由于数据更改导致的虚拟 DOM 重新渲染和打补丁，在这之后会调用该钩子。
+            // 当这个钩子被调用时，组件 DOM 已经更新，所以你现在可以执行依赖于 DOM 的操作。然而在大多数情况下，你应该避免在此期间更改状态。如果要相应状态改变，通常最好使用计算属性或 watcher 取而代之。
+            // 注意 updated 不会保证所有的子组件也都一起被重绘。如果你希望等到整个视图都重绘完毕，可以在 updated 里使用 vm.$nextTick：
+            // updated 事件执行的时候，页面和 data 数据已经同步一致了
+            console.log("----updated----");
+            console.log('页面上值：' + document.getElementsByTagName('p')[0].innerText);
+            console.log('vue.data.msg:' + this.msg);
+
+            this.$nextTick(function () {
+                // 仅在整个视图渲染后才运行的代码
+                console.log("render all page updated");
+            })
+        },
+        beforeDestroy() {
+            //实例销毁之前调用。在这一步，实例仍然完全可用
+        },
+        destroyed() {
+            //实例销毁后调用。该钩子被调用后，对应 Vue 实例的所有指令都被解绑，所有的事件监听器被移除，所有的子实例也都被销毁。
+        }
+    })
+</script>
